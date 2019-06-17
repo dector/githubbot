@@ -8,3 +8,6 @@
 # Build files
 out/
 build/
+
+# Secret file
+secret.properties
