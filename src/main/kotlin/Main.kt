@@ -1,5 +1,6 @@
 import FatalErrorType.GITHUB_AUTH_TOKEN_NOT_FOUND
 import FatalErrorType.SECRET_FILE_NOT_FOUND
+import org.eclipse.egit.github.core.User
 import org.eclipse.egit.github.core.client.GitHubClient
 import org.eclipse.egit.github.core.service.UserService
 import java.io.File
@@ -16,41 +17,44 @@ fun main() {
         exitProcess(1)
     }
 
-    val bot = Bot(buildBotConfiguration(environmentConfig))
+    val config = buildBotConfiguration(environmentConfig)
+    val bot = Bot(config, buildClient(config))
 
     bot.greetMe()
 
-    // Find all PRs with "landing" label
-
-    // Has CI resolution
-
-    // Green:
-    // Check if they are mergeable
-    //     Yes -> is CI success?
-    //         Yes -> Merge
-    //         No -> remove label (add another "landing blocked") and notify owner
-    //     No -> Rebase PR with master
-
-    // Red:
-    // Remove label (add another "landing blocked") and notify owner
+//    bot.autoMergeReadyPullRequests()
 }
 
-class Bot(configuration: Configuration) {
-
-    private val client = GitHubClient()
-            .apply { setOAuth2Token(configuration.authToken) }
+class Bot(private val configuration: Configuration, private val client: GitHubClientWrapper) {
 
     fun greetMe() {
         println("Connecting to github...")
 
-        val user = UserService(client).user.name
+        val user = client.user().name
 
         println("Hello, $user")
     }
 
+    fun autoMergeReadyPullRequests() {
+        // Find all PRs with "landing" label
+
+        // Has CI resolution
+
+        // Green:
+        // Check if they are mergeable
+        //     Yes -> is CI success?
+        //         Yes -> Merge
+        //         No -> remove label (add another "landing blocked") and notify owner
+        //     No -> Rebase PR with master
+
+        // Red:
+        // Remove label (add another "landing blocked") and notify owner
+    }
+
     data class Configuration(
             val authToken: String,
-            val repositories: List<Repository>
+            val repositories: List<Repository>,
+            val dryRun: Boolean = false
     )
 }
 
@@ -64,7 +68,47 @@ fun buildBotConfiguration(environmentConfig: EnvironmentConfig) = Bot.Configurat
                                 landingBlocked = "landing blocked"
                         )
                 )
-        )
+        ),
+        dryRun = true
+)
+
+class GitHubClientWrapper(private val client: GitHubClient, val dryRun: Boolean) {
+
+    fun user(): User = execute("fetching user") { UserService(client).user }
+
+    private fun <T> execute(actionTitle: String, action: () -> T): T {
+        logAction(actionTitle)
+
+        return action()
+    }
+
+    private fun <T> maybe(actionTitle: String, action: () -> T): MaybeExecuted<T> {
+        logAction(actionTitle)
+
+        return if (!dryRun)
+            Executed(action())
+        else Mocked()
+    }
+
+    private fun logAction(actionTitle: String) {
+        val prefix = if (dryRun) "Dry Run" else "Executing"
+
+        println("[$prefix] $actionTitle")
+    }
+}
+
+private sealed class MaybeExecuted<T>(val result: T?)
+private class Executed<T>(result: T) : MaybeExecuted<T>(result)
+private class Mocked<T>() : MaybeExecuted<T>(null)
+
+private fun <T> MaybeExecuted<T>.orElse(alternative: () -> T): T = when (this) {
+    is Executed -> result!!
+    is Mocked -> alternative()
+}
+
+fun buildClient(config: Bot.Configuration) = GitHubClientWrapper(
+        client = GitHubClient().apply { setOAuth2Token(config.authToken) },
+        dryRun = config.dryRun
 )
 
 data class EnvironmentConfig(val githubAuthToken: String?)
