@@ -8,13 +8,13 @@ version '0.1'
 
 repositories {
     jcenter()
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    implementation "org.eclipse.mylyn.github:org.eclipse.egit.github.core:2.1.5"
+    implementation "com.jcabi:jcabi-github:0.41"
+    implementation "org.slf4j:slf4j-simple:1.7.26"
 }
 
 compileKotlin {
