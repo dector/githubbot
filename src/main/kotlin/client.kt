@@ -6,37 +6,41 @@ class GitHubClientWrapper(private val client: Github, val dryRun: Boolean) {
             execute("fetching user") { User.Smart(client.users().self()) }
 
     fun readyForLandingPullRequestsIn(repo: Repository): Sequence<Pair<Pull.Smart, CIResolution>> =
-            pullRequests(repo)
-                    .filter { it.requiresLandingIn(repo) }
-                    .map { it to fetchCIResolution(it) }
-                    .asSequence()
-
-    private fun pullRequests(repo: Repository): Iterable<Pull.Smart> =
             execute("fetching pull requests") {
-                client.repos()
-                        .get(Coordinates.Simple(repo.owner, repo.name))
-                        .pulls()
-                        .iterate(mapOf("state" to "open"))
-                        .map { Pull.Smart(it) }
+                pullRequests(repo)
+                        .filter { it.requiresLandingIn(repo) }
+                        .map { it to fetchCIResolution(it) }
+                        .asSequence()
             }
 
     fun canBeMerged(pullRequest: Pull): Boolean {
         return false // FIXME implement
     }
 
-    fun merge(pullRequest: Pull): Boolean {
+    fun merge(pullRequest: Pull.Smart): Boolean {
+//        return pullRequest.merge(, pullRequest.base().sha()) == MergeState.SUCCESS
         return true // FIXME implement
     }
 
     fun rebase(pullRequest: Pull) {}
 
-    fun markBlockedForMerge(pullRequest: Pull, labels: ControlLabels) {
-        // Remove label
-        labels.requiresLanding
+    fun markBlockedForMerge(pullRequest: Pull.Smart, labels: ControlLabels) {
+        val prLabels = pullRequest.issue().labels()
 
-        // Add label
-        labels.landingBlocked
+        maybe("add 'landing blocked' label") {
+            prLabels.add(listOf(labels.landingBlocked))
+        }
+        maybe("remove 'require landing' label") {
+            prLabels.remove(labels.requiresLanding)
+        }
     }
+
+    private fun pullRequests(repo: Repository): Iterable<Pull.Smart> =
+            client.repos()
+                    .get(Coordinates.Simple(repo.owner, repo.name))
+                    .pulls()
+                    .iterate(mapOf("state" to "open"))
+                    .map { Pull.Smart(it) }
 
     private fun <T> execute(actionTitle: String, action: () -> T): T {
         logAction(actionTitle)
