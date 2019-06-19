@@ -9,5 +9,7 @@ class GithubApi(private val retrofit: Retrofit) {
 
     fun pulls(): PullsService = create()
 
+    fun issues(): IssuesService = create()
+
     private inline fun <reified T> create(): T = retrofit.create()
 }

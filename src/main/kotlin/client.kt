@@ -37,14 +37,7 @@ class GitHubClientWrapper(private val client: Github, val dryRun: Boolean) {
     fun rebase(pullRequest: Pull) {}
 
     fun markBlockedForMerge(pullRequest: Pull.Smart, labels: ControlLabels) {
-        val prLabels = pullRequest.issue().labels()
 
-        executeMaybe("add 'landing blocked' label") {
-            prLabels.add(listOf(labels.landingBlocked))
-        }
-        executeMaybe("remove 'require landing' label") {
-            prLabels.remove(labels.requiresLanding)
-        }
     }
 
     private fun pullRequests(repo: Repository): Iterable<Pull.Smart> =

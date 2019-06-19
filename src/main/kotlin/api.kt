@@ -1,5 +1,6 @@
 import github.GithubApi
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
@@ -12,6 +13,7 @@ fun buildApi(okHttpClient: OkHttpClient) = GithubApi(
 )
 
 fun buildOkHttpClient(authToken: String): OkHttpClient = OkHttpClient.Builder()
+    .addInterceptor(logInterceptor())
     .authenticator { route, response ->
         if (response.request().header("Authorization") != null) {
             // Already tried to authenticate
@@ -23,3 +25,7 @@ fun buildOkHttpClient(authToken: String): OkHttpClient = OkHttpClient.Builder()
             .build()
     }
     .build()
+
+private fun logInterceptor() = HttpLoggingInterceptor { println(it) }
+//    .setLevel(HttpLoggingInterceptor.Level.BODY)
+    .setLevel(HttpLoggingInterceptor.Level.BASIC)

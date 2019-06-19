@@ -1,12 +1,8 @@
-import github.GithubApi
-import github.RawPullRequest
-import github.getOpen
-import github.hasLabel
+import github.*
 import kotlinx.coroutines.runBlocking
 
 class Bot(
     private val configuration: Configuration,
-    private val client: GitHubClientWrapper,
     private val api: GithubApi
 ) {
 
@@ -46,7 +42,7 @@ class Bot(
                     }*/
                 }
                 CIResolution.FAILED -> {
-                    //client.markBlockedForMerge(pullRequest, repository.controlLabels)
+                    markBlockedForMerge(repository, pull)
                     // Notify owner
                 }
                 CIResolution.IN_PROGRESS -> {
@@ -54,6 +50,24 @@ class Bot(
                 }
             }
         }
+    }
+
+    private suspend fun markBlockedForMerge(repo: Repository, pull: RawPullRequest) {
+        println("Adding label '${repo.controlLabels.landingBlocked}'")
+
+        api.issues().addLabels(
+            repo.owner, repo.name,
+            pull.number.toString(),
+            listOf(repo.controlLabels.landingBlocked)
+        )
+
+        println("Removing label '${repo.controlLabels.requiresLanding}'")
+
+        api.issues().removeLabel(
+            repo.owner, repo.name,
+            pull.number.toString(),
+            repo.controlLabels.requiresLanding
+        )
     }
 
     data class Configuration(

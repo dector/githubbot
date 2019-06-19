@@ -16,7 +16,7 @@ fun main() {
     val config = buildBotConfiguration(environmentConfig)
     val okHttpClient = buildOkHttpClient(config.authToken)
     val api = buildApi(okHttpClient)
-    val bot = Bot(config, buildClient(config), api)
+    val bot = Bot(config, api)
 
     // Run
     runBlocking {

@@ -1,8 +1,8 @@
 package github
 
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.QueryMap
+import ext.asRequestBody
+import okhttp3.RequestBody
+import retrofit2.http.*
 
 interface UsersService {
 
@@ -22,3 +22,27 @@ interface PullsService {
 
 suspend fun PullsService.getOpen(user: String, repo: String): List<RawPullRequest> =
     getAll(user, repo, mapOf("state" to "open"))
+
+interface IssuesService {
+
+    @POST("/repos/{user}/{repo}/issues/{issue_number}/labels")
+    suspend fun addLabels(
+        @Path("user") user: String,
+        @Path("repo") repo: String,
+        @Path("issue_number") issueNumber: String,
+        @Body body: RequestBody
+    )
+
+    @DELETE("/repos/{user}/{repo}/issues/{issue_number}/labels/{label}")
+    suspend fun removeLabel(
+        @Path("user") user: String,
+        @Path("repo") repo: String,
+        @Path("issue_number") issueNumber: String,
+        @Path("label") label: String
+    )
+}
+
+suspend fun IssuesService.addLabels(user: String, repo: String, issueNumber: String, labels: List<String>) =
+    addLabels(user, repo, issueNumber,
+        mapOf("labels" to labels).asRequestBody()
+    )
