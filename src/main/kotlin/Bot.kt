@@ -1,11 +1,17 @@
-class Bot(private val configuration: Configuration, private val client: GitHubClientWrapper) {
+import github.GithubApi
 
-    fun greetMe() {
+class Bot(
+    private val configuration: Configuration,
+    private val client: GitHubClientWrapper,
+    private val api: GithubApi
+) {
+
+    suspend fun greetMe() {
         println("Connecting to github...")
 
-        val user = client.user().name()
+        val userName = api.users().self().name
 
-        println("Hello, $user")
+        println("Hello, $userName")
     }
 
     fun autoMergeReadyPullRequests() {
@@ -41,8 +47,8 @@ class Bot(private val configuration: Configuration, private val client: GitHubCl
     }
 
     data class Configuration(
-            val authToken: String,
-            val repositories: List<Repository>,
-            val dryRun: Boolean = false
+        val authToken: String,
+        val repositories: List<Repository>,
+        val dryRun: Boolean = false
     )
 }

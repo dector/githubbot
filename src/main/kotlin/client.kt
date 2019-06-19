@@ -5,34 +5,31 @@ import java.net.HttpURLConnection
 
 class GitHubClientWrapper(private val client: Github, val dryRun: Boolean) {
 
-    fun user(): User.Smart =
-            execute("fetching user") { User.Smart(client.users().self()) }
-
     fun readyForLandingPullRequestsIn(repo: Repository): Sequence<Pair<Pull.Smart, CIResolution>> =
-            execute("fetching pull requests") {
-                pullRequests(repo)
-                        .filter { it.requiresLandingIn(repo) }
-                        .map { it to fetchCIResolution(it) }
-                        .asSequence()
-            }
+        execute("fetching pull requests") {
+            pullRequests(repo)
+                .filter { it.requiresLandingIn(repo) }
+                .map { it to fetchCIResolution(it) }
+                .asSequence()
+        }
 
     fun canBeMerged(pullRequest: Pull): Boolean = execute("checking if can be merged") {
         val coords = pullRequest.repo().coordinates()
         val request = client.entry()
-                .uri()
-                .path("/repos")
-                .path(coords.user())
-                .path(coords.repo())
-                .path("/commits")
-                .path(pullRequest.base().ref())
-                .path("/status")
-                .back()
+            .uri()
+            .path("/repos")
+            .path(coords.user())
+            .path(coords.repo())
+            .path("/commits")
+            .path(pullRequest.base().ref())
+            .path("/status")
+            .back()
 
         val response = request.fetch()
-                .`as`(RestResponse::class.java)
-                .assertStatus(HttpURLConnection.HTTP_OK)
-                .`as`(JsonResponse::class.java)
-                .json().readObject();
+            .`as`(RestResponse::class.java)
+            .assertStatus(HttpURLConnection.HTTP_OK)
+            .`as`(JsonResponse::class.java)
+            .json().readObject();
 
         val isSuccess = response.getString("state") == "success"
 
@@ -59,11 +56,11 @@ class GitHubClientWrapper(private val client: Github, val dryRun: Boolean) {
     }
 
     private fun pullRequests(repo: Repository): Iterable<Pull.Smart> =
-            client.repos()
-                    .get(Coordinates.Simple(repo.owner, repo.name))
-                    .pulls()
-                    .iterate(mapOf("state" to "open"))
-                    .map { Pull.Smart(it) }
+        client.repos()
+            .get(Coordinates.Simple(repo.owner, repo.name))
+            .pulls()
+            .iterate(mapOf("state" to "open"))
+            .map { Pull.Smart(it) }
 
     private fun <T> execute(actionTitle: String, action: () -> T): T {
         logAction(actionTitle)
@@ -96,8 +93,8 @@ private fun <T> MaybeExecuted<T>.orElse(alternative: () -> T): T = when (this) {
 }
 
 fun buildClient(config: Bot.Configuration) = GitHubClientWrapper(
-        client = RtGithub(config.authToken),
-        dryRun = config.dryRun
+    client = RtGithub(config.authToken),
+    dryRun = config.dryRun
 )
 
 enum class CIResolution {
@@ -105,13 +102,13 @@ enum class CIResolution {
 }
 
 private fun Pull.Smart.requiresLandingIn(repository: Repository): Boolean = issue()
-        .hasLabel(repository.controlLabels.requiresLanding)
+    .hasLabel(repository.controlLabels.requiresLanding)
 
 private fun Issue.hasLabel(title: String): Boolean = labels()
-        .iterate()
-        .any { label: Label ->
-            label.name() == title
-        }
+    .iterate()
+    .any { label: Label ->
+        label.name() == title
+    }
 
 private fun fetchCIResolution(pull: Pull.Smart): CIResolution = run {
     val labels = pull.issue().labels().iterate().map { it.name() }
