@@ -20,7 +20,7 @@ fun main() {
 
     // Run
     runBlocking {
-        // bot.greetMe()
+        bot.greetMe()
 
         bot.autoMergeReadyPullRequests()
     }

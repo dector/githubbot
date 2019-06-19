@@ -99,3 +99,7 @@ private fun fetchCIResolution(pull: RawPullRequest): CIResolution = run {
         else -> CIResolution.IN_PROGRESS
     }
 }
+
+private enum class CIResolution {
+    SUCCESS, FAILED, IN_PROGRESS
+}
