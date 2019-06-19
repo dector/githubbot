@@ -3,15 +3,20 @@ package github
 import retrofit2.Retrofit
 import retrofit2.create
 
-class GithubApi(private val retrofit: Retrofit) {
+interface GithubApi {
 
-    fun users(): UsersService = create()
+    fun users(): UsersService
+    fun pulls(): PullsService
+    fun issues(): IssuesService
+    fun commits(): CommitsService
+}
 
-    fun pulls(): PullsService = create()
+class RetrofitGithubApi(private val retrofit: Retrofit) : GithubApi {
 
-    fun issues(): IssuesService = create()
-
-    fun commits(): CommitsService = create()
+    override fun users(): UsersService = create()
+    override fun pulls(): PullsService = create()
+    override fun issues(): IssuesService = create()
+    override fun commits(): CommitsService = create()
 
     private inline fun <reified T> create(): T = retrofit.create()
 }

@@ -1,12 +1,13 @@
 package components
 
 import github.GithubApi
+import github.RetrofitGithubApi
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
-fun buildApi(okHttpClient: OkHttpClient) = GithubApi(
+fun buildApi(okHttpClient: OkHttpClient): GithubApi = RetrofitGithubApi(
     retrofit = Retrofit.Builder()
         .baseUrl("https://api.github.com/")
         .client(okHttpClient)
