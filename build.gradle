@@ -15,6 +15,7 @@ dependencies {
 
     implementation "com.jcabi:jcabi-github:0.41"
     implementation "org.slf4j:slf4j-simple:1.7.26"
+    implementation "org.glassfish:javax.json:1.0.4"
 }
 
 compileKotlin {

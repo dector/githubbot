@@ -1,4 +1,7 @@
 import com.jcabi.github.*
+import com.jcabi.http.response.JsonResponse
+import com.jcabi.http.response.RestResponse
+import java.net.HttpURLConnection
 
 class GitHubClientWrapper(private val client: Github, val dryRun: Boolean) {
 
@@ -13,24 +16,44 @@ class GitHubClientWrapper(private val client: Github, val dryRun: Boolean) {
                         .asSequence()
             }
 
-    fun canBeMerged(pullRequest: Pull): Boolean {
-        return false // FIXME implement
+    fun canBeMerged(pullRequest: Pull): Boolean = execute("checking if can be merged") {
+        val coords = pullRequest.repo().coordinates()
+        val request = client.entry()
+                .uri()
+                .path("/repos")
+                .path(coords.user())
+                .path(coords.repo())
+                .path("/commits")
+                .path(pullRequest.base().ref())
+                .path("/status")
+                .back()
+
+        val response = request.fetch()
+                .`as`(RestResponse::class.java)
+                .assertStatus(HttpURLConnection.HTTP_OK)
+                .`as`(JsonResponse::class.java)
+                .json().readObject();
+
+        val isSuccess = response.getString("state") == "success"
+
+        //if (isSuccess) return@execute true
+
+        return@execute isSuccess
     }
 
-    fun merge(pullRequest: Pull.Smart): Boolean {
-//        return pullRequest.merge(, pullRequest.base().sha()) == MergeState.SUCCESS
-        return true // FIXME implement
-    }
+    fun merge(pullRequest: Pull.Smart): Boolean = executeMaybe("merging request") {
+        pullRequest.merge("", pullRequest.base().sha()) == MergeState.SUCCESS
+    }.orElse { true }
 
     fun rebase(pullRequest: Pull) {}
 
     fun markBlockedForMerge(pullRequest: Pull.Smart, labels: ControlLabels) {
         val prLabels = pullRequest.issue().labels()
 
-        maybe("add 'landing blocked' label") {
+        executeMaybe("add 'landing blocked' label") {
             prLabels.add(listOf(labels.landingBlocked))
         }
-        maybe("remove 'require landing' label") {
+        executeMaybe("remove 'require landing' label") {
             prLabels.remove(labels.requiresLanding)
         }
     }
@@ -48,7 +71,7 @@ class GitHubClientWrapper(private val client: Github, val dryRun: Boolean) {
         return action()
     }
 
-    private fun <T> maybe(actionTitle: String, action: () -> T): MaybeExecuted<T> {
+    private fun <T> executeMaybe(actionTitle: String, action: () -> T): MaybeExecuted<T> {
         logAction(actionTitle)
 
         return if (!dryRun)
