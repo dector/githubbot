@@ -5,14 +5,6 @@ import java.net.HttpURLConnection
 
 class GitHubClientWrapper(private val client: Github, val dryRun: Boolean) {
 
-    fun readyForLandingPullRequestsIn(repo: Repository): Sequence<Pair<Pull.Smart, CIResolution>> =
-        execute("fetching pull requests") {
-            pullRequests(repo)
-                .filter { it.requiresLandingIn(repo) }
-                .map { it to fetchCIResolution(it) }
-                .asSequence()
-        }
-
     fun canBeMerged(pullRequest: Pull): Boolean = execute("checking if can be merged") {
         val coords = pullRequest.repo().coordinates()
         val request = client.entry()

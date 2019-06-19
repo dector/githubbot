@@ -3,6 +3,7 @@ import kotlinx.coroutines.runBlocking
 import kotlin.system.exitProcess
 
 fun main() {
+    // Load environment
     val environmentConfig = try {
         parseEnvironmentConfig()
             .verifyOrThrow()
@@ -11,16 +12,19 @@ fun main() {
         exitProcess(1)
     }
 
+    // Build dependencies
     val config = buildBotConfiguration(environmentConfig)
     val okHttpClient = buildOkHttpClient(config.authToken)
     val api = buildApi(okHttpClient)
     val bot = Bot(config, buildClient(config), api)
 
+    // Run
     runBlocking {
         // bot.greetMe()
 
         bot.autoMergeReadyPullRequests()
     }
 
+    // Shutdown app
     okHttpClient.shutdownNow()
 }
