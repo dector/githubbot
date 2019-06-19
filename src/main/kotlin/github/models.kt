@@ -20,9 +20,22 @@ data class RawLabel(
 )
 
 data class RawHead(
-    val ref: String
+    val ref: String,
+    val sha: String
 )
 
 data class RawStatus(
     val state: String
 )
+
+data class RawMergePullResponse(
+    val merged: Boolean?,
+    val message: String
+)
+
+enum class MergeMethod(private val value: String) {
+    Merge("merge"),
+    Rebase("rebase");
+
+    override fun toString() = value
+}

@@ -18,6 +18,22 @@ interface PullsService {
         @Path("repo") repo: String,
         @QueryMap params: Map<String, String>
     ): List<RawPullRequest>
+
+    @PUT("repos/{user}/{repo}/pulls/{pull_number}/merge")
+    suspend fun merge(
+        @Path("user") user: String,
+        @Path("repo") repo: String,
+        @Path("pull_number") pullNumber: Int,
+        @Field("sha") sha: String,
+        @Field("merge_method") mergeMethod: MergeMethod
+    ): RawMergePullResponse
+
+    @PUT("repos/{user}/{repo}/pulls/{pull_number}/update-branch")
+    suspend fun updateBranch(
+        @Path("user") user: String,
+        @Path("repo") repo: String,
+        @Path("pull_number") pullNumber: Int
+    )
 }
 
 suspend fun PullsService.getOpen(user: String, repo: String): List<RawPullRequest> =
@@ -29,7 +45,7 @@ interface IssuesService {
     suspend fun addLabels(
         @Path("user") user: String,
         @Path("repo") repo: String,
-        @Path("issue_number") issueNumber: String,
+        @Path("issue_number") issueNumber: Int,
         @Body body: RequestBody
     )
 
@@ -42,7 +58,7 @@ interface IssuesService {
     )
 }
 
-suspend fun IssuesService.addLabels(user: String, repo: String, issueNumber: String, labels: List<String>) =
+suspend fun IssuesService.addLabels(user: String, repo: String, issueNumber: Int, labels: List<String>) =
     addLabels(user, repo, issueNumber,
         mapOf("labels" to labels).asRequestBody()
     )

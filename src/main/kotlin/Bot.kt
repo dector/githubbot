@@ -34,9 +34,12 @@ class Bot(
             when (ciResolution) {
                 CIResolution.SUCCESS -> {
                     if (canBeMerged(repository, pull)) {
-//                        client.merge(pullRequest)
+                        api.pulls().merge(
+                            repository.owner, repository.name,
+                            pull.number, pull.head.sha, MergeMethod.Rebase)
                     } else {
-//                        client.rebase(pullRequest)
+                        api.pulls().updateBranch(
+                            repository.owner, repository.name, pull.number)
                     }
                 }
                 CIResolution.FAILED -> {
@@ -66,7 +69,7 @@ class Bot(
 
         api.issues().addLabels(
             repo.owner, repo.name,
-            pull.number.toString(),
+            pull.number,
             listOf(repo.controlLabels.landingBlocked)
         )
 
