@@ -34,16 +34,21 @@ class Bot(
             when (ciResolution) {
                 CIResolution.SUCCESS -> {
                     if (canBeMerged(repository, pull)) {
+                        println("Merging...")
                         api.pulls().merge(
                             repository.owner, repository.name,
                             pull.number, pull.head.sha, MergeMethod.Rebase)
                     } else {
+                        println("Updating branch...")
                         api.pulls().updateBranch(
                             repository.owner, repository.name, pull.number)
                     }
                 }
                 CIResolution.FAILED -> {
                     markBlockedForMerge(repository, pull)
+
+                    api.issues().postComment(repository.owner, repository.name, pull.number,
+                        "Attention required.")
                     // Notify owner
                 }
                 CIResolution.IN_PROGRESS -> {
@@ -77,7 +82,7 @@ class Bot(
 
         api.issues().removeLabel(
             repo.owner, repo.name,
-            pull.number.toString(),
+            pull.number,
             repo.controlLabels.requiresLanding
         )
     }

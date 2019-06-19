@@ -28,6 +28,7 @@ interface PullsService {
         @Field("merge_method") mergeMethod: MergeMethod
     ): RawMergePullResponse
 
+    @Headers("Accept: application/vnd.github.lydian-preview+json")
     @PUT("repos/{user}/{repo}/pulls/{pull_number}/update-branch")
     suspend fun updateBranch(
         @Path("user") user: String,
@@ -53,14 +54,29 @@ interface IssuesService {
     suspend fun removeLabel(
         @Path("user") user: String,
         @Path("repo") repo: String,
-        @Path("issue_number") issueNumber: String,
+        @Path("issue_number") issueNumber: Int,
         @Path("label") label: String
+    )
+
+    @POST("/repos/{user}/{repo}/issues/{issue_number}/comments")
+    suspend fun postComment(
+        @Path("user") user: String,
+        @Path("repo") repo: String,
+        @Path("issue_number") issueNumber: Int,
+        @Body body: RequestBody
     )
 }
 
 suspend fun IssuesService.addLabels(user: String, repo: String, issueNumber: Int, labels: List<String>) =
-    addLabels(user, repo, issueNumber,
+    addLabels(
+        user, repo, issueNumber,
         mapOf("labels" to labels).asRequestBody()
+    )
+
+suspend fun IssuesService.postComment(user: String, repo: String, issueNumber: Int, comment: String) =
+    postComment(
+        user, repo, issueNumber,
+        mapOf("body" to comment).asRequestBody()
     )
 
 interface CommitsService {

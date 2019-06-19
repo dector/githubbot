@@ -1,3 +1,5 @@
+package components
+
 import github.GithubApi
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -27,5 +29,5 @@ fun buildOkHttpClient(authToken: String): OkHttpClient = OkHttpClient.Builder()
     .build()
 
 private fun logInterceptor() = HttpLoggingInterceptor { println(it) }
-//    .setLevel(HttpLoggingInterceptor.Level.BODY)
     .setLevel(HttpLoggingInterceptor.Level.BASIC)
+//    .setLevel(HttpLoggingInterceptor.Level.BODY)

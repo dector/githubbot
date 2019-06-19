@@ -1,3 +1,9 @@
+package components
+
+import Bot
+import ControlLabels
+import Repository
+
 fun buildBotConfiguration(environmentConfig: EnvironmentConfig) = Bot.Configuration(
     authToken = environmentConfig.githubAuthToken ?: "",
     repositories = listOf(

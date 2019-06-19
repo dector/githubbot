@@ -1,5 +1,8 @@
+package components
+
 import FatalErrorType.GITHUB_AUTH_TOKEN_NOT_FOUND
 import FatalErrorType.SECRET_FILE_NOT_FOUND
+import fatalError
 import java.io.File
 import java.util.*
 
