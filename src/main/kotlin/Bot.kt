@@ -33,13 +33,11 @@ class Bot(
 
             when (ciResolution) {
                 CIResolution.SUCCESS -> {
-                    /*val canBeMerged = false
-
-                    if (client.canBeMerged(pullRequest)) {
-                        client.merge(pullRequest)
+                    if (canBeMerged(repository, pull)) {
+//                        client.merge(pullRequest)
                     } else {
-                        client.rebase(pullRequest)
-                    }*/
+//                        client.rebase(pullRequest)
+                    }
                 }
                 CIResolution.FAILED -> {
                     markBlockedForMerge(repository, pull)
@@ -50,6 +48,17 @@ class Bot(
                 }
             }
         }
+    }
+
+    private suspend fun canBeMerged(repo: Repository, pull: RawPullRequest): Boolean {
+        println("Checking if can be merged... ")
+
+        val statuses = api.commits().getStatuses(repo.owner, repo.name, pull.head.ref)
+        val result = statuses.isNotEmpty() && statuses.allSucceeded
+
+        if (result) println("Can be merged") else println("Can't be merged")
+
+        return result
     }
 
     private suspend fun markBlockedForMerge(repo: Repository, pull: RawPullRequest) {

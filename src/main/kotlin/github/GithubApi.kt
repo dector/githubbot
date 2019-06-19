@@ -11,5 +11,7 @@ class GithubApi(private val retrofit: Retrofit) {
 
     fun issues(): IssuesService = create()
 
+    fun commits(): CommitsService = create()
+
     private inline fun <reified T> create(): T = retrofit.create()
 }

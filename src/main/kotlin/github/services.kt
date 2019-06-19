@@ -46,3 +46,13 @@ suspend fun IssuesService.addLabels(user: String, repo: String, issueNumber: Str
     addLabels(user, repo, issueNumber,
         mapOf("labels" to labels).asRequestBody()
     )
+
+interface CommitsService {
+
+    @GET("/repos/{user}/{repo}/commits/{ref}/statuses")
+    suspend fun getStatuses(
+        @Path("user") user: String,
+        @Path("repo") repo: String,
+        @Path("ref") ref: String
+    ): List<RawStatus>
+}
