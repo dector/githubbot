@@ -18,3 +18,11 @@ data class ControlLabels(
     val requiresLanding: String,
     val landingBlocked: String
 )
+
+class PullRequest {
+
+    data class Coordinates(
+        val repo: Repository.Coordinates,
+        val number: Int
+    )
+}

@@ -1,7 +1,4 @@
-import github.GithubApi
-import github.RawPullRequest
-import github.getOpen
-import github.hasLabel
+import github.*
 
 class GithubUseCases(private val api: GithubApi) {
 
@@ -18,6 +15,27 @@ class RepositoryUseCases(
 
     suspend fun getPullsWithLabel(label: String): List<RawPullRequest> = api
         .pulls()
-        .getOpen(coordinates.owner, coordinates.name)
+        .getOpen(
+            user = coordinates.owner,
+            repo = coordinates.name
+        )
         .filter { it.hasLabel(label) }
+
+    fun via(coordinates: PullRequest.Coordinates): PullRequestUseCases =
+        PullRequestUseCases(api, coordinates)
+}
+
+class PullRequestUseCases(
+    private val api: GithubApi,
+    private val coordinates: PullRequest.Coordinates
+) {
+
+    suspend fun postComment(message: String) = api
+        .issues()
+        .postComment(
+            user = coordinates.repo.owner,
+            repo = coordinates.repo.name,
+            issueNumber = coordinates.number,
+            comment = message
+        )
 }

@@ -28,6 +28,9 @@ class Bot(
             .getPullsWithLabel(repository.controlLabels.requiresLanding)
 
         pullRequestsForLanding.forEach { pull ->
+            val pullRequestUseCases = repositoryUseCases.via(
+                pull.coordinatesOn(repository.coordinates))
+
             println("=== ${pull.title} ===")
 
             print("Loading CI resolution... ")
@@ -52,11 +55,7 @@ class Bot(
                 CIResolution.FAILED -> {
                     markBlockedForMerge(repository, pull)
 
-                    api.issues().postComment(
-                        repository.owner, repository.name, pull.number,
-                        "Attention required."
-                    )
-                    // Notify owner
+                    pullRequestUseCases.postComment("Attention required.")
                 }
                 CIResolution.IN_PROGRESS -> {
                     // do nothing

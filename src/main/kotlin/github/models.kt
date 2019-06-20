@@ -39,3 +39,8 @@ enum class MergeMethod(private val value: String) {
 
     override fun toString() = value
 }
+
+fun RawPullRequest.coordinatesOn(repo: Repository.Coordinates) = PullRequest.Coordinates(
+    repo = repo,
+    number = number
+)
