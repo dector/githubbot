@@ -4,7 +4,8 @@ import kotlinx.coroutines.runBlocking
 class Bot(
     private val configuration: Configuration,
     private val useCases: GithubUseCases,
-    private val api: GithubApi
+
+    @Deprecated("Use `useCases` instead") private val api: GithubApi
 ) {
 
     suspend fun greetMe() {
