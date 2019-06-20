@@ -17,13 +17,14 @@ fun main() {
     val config = buildBotConfiguration(environmentConfig)
     val okHttpClient = buildOkHttpClient(config.authToken)
     val api = buildApi(okHttpClient)
-    val bot = Bot(config, api)
+    val useCases = GithubUseCases(api)
+    val bot = Bot(config, useCases, api)
 
     // Run
     runBlocking {
         bot.greetMe()
 
-        bot.autoMergeReadyPullRequests()
+//        bot.autoMergeReadyPullRequests()
     }
 
     // Shutdown app

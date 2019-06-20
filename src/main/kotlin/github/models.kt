@@ -1,8 +1,8 @@
 package github
 
 data class RawUser(
-    val login: String,
-    val name: String
+    val login: String = "",
+    val name: String = ""
 )
 
 data class RawPullRequest(

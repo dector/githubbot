@@ -11,13 +11,19 @@ repositories {
 }
 
 dependencies {
+    // Stdlib
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0-M1'
 
+    // REST
     implementation 'com.squareup.retrofit2:retrofit:2.6.0'
     implementation 'com.squareup.retrofit2:converter-moshi:2.6.0'
     implementation 'com.squareup.okhttp3:okhttp:3.14.2'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.14.2'
+    
+    // Testing
+    testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.2'
+    testImplementation "io.mockk:mockk:1.9.3"
 }
 
 compileKotlin {

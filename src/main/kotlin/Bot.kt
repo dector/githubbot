@@ -3,13 +3,14 @@ import kotlinx.coroutines.runBlocking
 
 class Bot(
     private val configuration: Configuration,
+    private val useCases: GithubUseCases,
     private val api: GithubApi
 ) {
 
     suspend fun greetMe() {
         println("Connecting to github...")
 
-        val userName = api.users().self().name
+        val userName = useCases.getUserName()
 
         println("Hello, $userName")
     }
