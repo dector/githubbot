@@ -21,9 +21,10 @@ class Bot(
     }
 
     private fun autoMergeReadyPullRequests(repository: Repository) = runBlocking {
-        val pullRequestsForLanding = api.pulls()
-            .getOpen(repository.owner, repository.name)
-            .filter { it.hasLabel(repository.controlLabels.requiresLanding) }
+        val repositoryUseCases = useCases.via(repository.coordinates)
+
+        val pullRequestsForLanding = repositoryUseCases
+            .getPullsWithLabel(repository.controlLabels.requiresLanding)
 
         pullRequestsForLanding.forEach { pull ->
             println("=== ${pull.title} ===")
@@ -38,18 +39,22 @@ class Bot(
                         println("Merging...")
                         api.pulls().merge(
                             repository.owner, repository.name,
-                            pull.number, pull.head.sha, MergeMethod.Rebase)
+                            pull.number, pull.head.sha, MergeMethod.Rebase
+                        )
                     } else {
                         println("Updating branch...")
                         api.pulls().updateBranch(
-                            repository.owner, repository.name, pull.number)
+                            repository.owner, repository.name, pull.number
+                        )
                     }
                 }
                 CIResolution.FAILED -> {
                     markBlockedForMerge(repository, pull)
 
-                    api.issues().postComment(repository.owner, repository.name, pull.number,
-                        "Attention required.")
+                    api.issues().postComment(
+                        repository.owner, repository.name, pull.number,
+                        "Attention required."
+                    )
                     // Notify owner
                 }
                 CIResolution.IN_PROGRESS -> {

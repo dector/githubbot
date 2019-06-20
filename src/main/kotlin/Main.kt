@@ -24,7 +24,7 @@ fun main() {
     runBlocking {
         bot.greetMe()
 
-//        bot.autoMergeReadyPullRequests()
+        bot.autoMergeReadyPullRequests()
     }
 
     // Shutdown app

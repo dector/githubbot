@@ -12,7 +12,7 @@ class GithubUseCasesTest : BehaviorSpec({
     Given("GithubUseCases") {
         val user = RawUser(name = "octo-user")
         val useCases = GithubUseCases(
-            api = buildApiThatReturns(user)
+            api = apiThatReturns(user)
         )
 
         When("user name requested") {
@@ -25,10 +25,12 @@ class GithubUseCasesTest : BehaviorSpec({
     }
 })
 
-private fun buildApiThatReturns(user: RawUser) = run {
-    val usersService = mockk<UsersService> {
-        coEvery { self() } returns user
-    }
+private fun apiThatReturns(user: RawUser) = buildApi {
+    coEvery { self() } returns user
+}
+
+private fun buildApi(init: UsersService.() -> Unit) = run {
+    val usersService = mockk(block = init)
     mockk<GithubApi> {
         every { users() } returns usersService
     }

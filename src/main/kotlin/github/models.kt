@@ -6,22 +6,22 @@ data class RawUser(
 )
 
 data class RawPullRequest(
-    val id: Int,
-    val state: String,
-    val title: String,
-    val number: Int,
-    val head: RawHead,
-    val labels: List<RawLabel>
+    val id: Int = -1,
+    val state: String = "",
+    val title: String = "",
+    val number: Int = -1,
+    val head: RawHead = RawHead(),
+    val labels: List<RawLabel> = emptyList()
 )
 
 data class RawLabel(
-    val id: Long,
-    val name: String
+    val id: Long = -1,
+    val name: String = ""
 )
 
 data class RawHead(
-    val ref: String,
-    val sha: String
+    val ref: String = "",
+    val sha: String = ""
 )
 
 data class RawStatus(
