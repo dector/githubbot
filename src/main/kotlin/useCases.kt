@@ -38,4 +38,28 @@ class PullRequestUseCases(
             issueNumber = coordinates.number,
             comment = message
         )
+
+    suspend fun addLabels(labels: List<String>) {
+        if (labels.isEmpty()) return
+
+        api.issues()
+            .addLabels(
+                user = coordinates.repo.owner,
+                repo = coordinates.repo.name,
+                issueNumber = coordinates.number,
+                labels = labels
+            )
+    }
+
+    suspend fun removeLabel(label: String) {
+        if (label.isEmpty()) return
+
+        api.issues()
+            .removeLabel(
+                user = coordinates.repo.owner,
+                repo = coordinates.repo.name,
+                issueNumber = coordinates.number,
+                label = label
+            )
+    }
 }

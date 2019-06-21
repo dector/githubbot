@@ -29,7 +29,8 @@ class Bot(
 
         pullRequestsForLanding.forEach { pull ->
             val pullRequestUseCases = repositoryUseCases.via(
-                pull.coordinatesOn(repository.coordinates))
+                pull.coordinatesOn(repository.coordinates)
+            )
 
             println("=== ${pull.title} ===")
 
@@ -39,7 +40,7 @@ class Bot(
 
             when (ciResolution) {
                 CIResolution.SUCCESS -> {
-                    if (canBeMerged(repository, pull)) {
+                    if (canBeMerged(repository, pull, pullRequestUseCases)) {
                         println("Merging...")
                         api.pulls().merge(
                             repository.owner, repository.name,
@@ -53,7 +54,7 @@ class Bot(
                     }
                 }
                 CIResolution.FAILED -> {
-                    markBlockedForMerge(repository, pull)
+                    markBlockedForMerge(repository, pullRequestUseCases)
 
                     pullRequestUseCases.postComment("Attention required.")
                 }
@@ -64,7 +65,7 @@ class Bot(
         }
     }
 
-    private suspend fun canBeMerged(repo: Repository, pull: RawPullRequest): Boolean {
+    private suspend fun canBeMerged(repo: Repository, pull: RawPullRequest, useCases: PullRequestUseCases): Boolean {
         println("Checking if can be merged... ")
 
         val statuses = api.commits().getStatuses(repo.owner, repo.name, pull.head.ref)
@@ -75,22 +76,21 @@ class Bot(
         return result
     }
 
-    private suspend fun markBlockedForMerge(repo: Repository, pull: RawPullRequest) {
-        println("Adding label '${repo.controlLabels.landingBlocked}'")
+    private suspend fun markBlockedForMerge(repo: Repository, useCases: PullRequestUseCases) {
+        addLabel(repo.controlLabels.landingBlocked, useCases)
+        removeLabel(repo.controlLabels.requiresLanding, useCases)
+    }
 
-        api.issues().addLabels(
-            repo.owner, repo.name,
-            pull.number,
-            listOf(repo.controlLabels.landingBlocked)
-        )
+    private suspend fun addLabel(label: String, useCases: PullRequestUseCases) {
+        println("Adding label '$label'")
 
-        println("Removing label '${repo.controlLabels.requiresLanding}'")
+        useCases.addLabels(listOf(label))
+    }
 
-        api.issues().removeLabel(
-            repo.owner, repo.name,
-            pull.number,
-            repo.controlLabels.requiresLanding
-        )
+    private suspend fun removeLabel(label: String, useCases: PullRequestUseCases) {
+        println("Removing label '$label'")
+
+        useCases.removeLabel(label)
     }
 
     data class Configuration(

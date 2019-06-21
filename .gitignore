@@ -8,6 +8,7 @@
 # Build files
 out/
 build/
+.kotlintest/
 
 # Secret file
 secret.properties
